@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+import datetime
 import os
 from pathlib import Path
 
@@ -26,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'authentication.User'
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,14 +40,34 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
-    'authentication'
-
+    'authentication',
+    'expenses',
+    'income',
+    'userstats'
 ]
 
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
 REST_FRAMEWORK = {
+'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
     'NON_FIELD_ERRORS_KEY': 'error',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     )
 }
 
@@ -129,5 +151,5 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'mikailkyusuf@gmail.com'
-EMAIL_HOST_PASSWORD = 'mikail.kunle'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
