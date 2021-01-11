@@ -8,7 +8,7 @@ from django.http import HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.utils.encoding import smart_bytes, DjangoUnicodeDecodeError, smart_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from rest_framework import generics, status, views
+from rest_framework import generics, status, views, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -18,7 +18,7 @@ from authentication.Util import Util
 from authentication.models import User
 from authentication.renderers import UserRenderer
 from authentication.serializers import RegisterSerializer, EmailVerificationSerializer, LoginSerializer, \
-    ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer
+    ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer
 from rest_framework_jwt.settings import api_settings
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -84,6 +84,19 @@ class LoginAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class LogoutAPIView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        message = {"success":"User Successfully Logged Out"}
+        return Response(data=message,status=status.HTTP_204_NO_CONTENT)
 
 
 class RequestPasswordResetEmail(generics.GenericAPIView):
